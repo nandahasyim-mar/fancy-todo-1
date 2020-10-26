@@ -1,10 +1,1 @@
 node_modules
-routes
-app.js
-package-lock.json
-package.json
-controllers
-config
-models
-migrations
-seeders
