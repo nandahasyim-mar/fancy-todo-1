@@ -1,23 +1,19 @@
 'use strict';
 module.exports = {
   up:  (queryInterface, Sequelize) => {
-    return queryInterface.createTable('todos', {
+    return queryInterface.createTable('Users', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      title: {
-        type: Sequelize.STRING
+      email: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true
       },
-      description: {
-        type: Sequelize.STRING
-      },
-      status: {
-        type: Sequelize.STRING
-      },
-      due_date: {
+      password: {
         type: Sequelize.STRING
       },
       createdAt: {
@@ -27,10 +23,10 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
-      },
+      }
     });
   },
   down:  (queryInterface, Sequelize) => {
-    return queryInterface.dropTable('todos');
+    return queryInterface.dropTable('Users');
   }
 };
