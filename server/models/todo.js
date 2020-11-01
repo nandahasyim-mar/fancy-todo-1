@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.DATE,
       validate: {
         isAfter: {
-          args: new Date().toISOString().split('T')[0],
+          args: new Date().toISOString(),
           msg: "Invalid Validation date"
         }
       }

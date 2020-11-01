@@ -1,13 +1,30 @@
 const { todo, User } = require('../models/index')
-
 const { comparePassword } = require('../helpers/bcrypt')
 const { signToken } = require('../helpers/jwt')
+const {OAuth2Client} = require('google-auth-library'); 
 
 class toDoController {
   static allToDo(req, res, next) {
     const userId = req.loggedInUser.id
     todo.findAll({
       where: {
+        status: "to do",
+        userId
+      }
+    })
+    .then(data => {
+      res.status(200).json(data)
+    })
+    .catch(err => {
+      next(err)
+    })
+  }
+
+  static getToDoDone(req, res, next) {
+    const userId = req.loggedInUser.id
+    todo.findAll({
+      where: {
+        status: "finished",
         userId
       }
     })
@@ -34,11 +51,11 @@ class toDoController {
     let obj = {
       title: req.body.title,
       description: req.body.description,
-      status: req.body.status,
+      status: "to do",
       due_date: req.body.due_date,
       userId
     }
-    console.log(obj);
+    // console.log(obj);
     todo.create(obj)
     .then(data => {
       res.status(201).json(data)
@@ -50,6 +67,7 @@ class toDoController {
 
   static updateAllTodo(req, res, next) {
     let id = +req.params.id
+    const userId = req.loggedInUser.id
     let obj = {
       title: req.body.title,
       description: req.body.description,
@@ -57,6 +75,29 @@ class toDoController {
       due_date: req.body.due_date
     }
     todo.update(obj, {
+      where: {
+        id: id,
+        userId
+      }
+    })
+    .then(data => {
+      res.status(200).json(data)
+    })
+    .catch(err => {
+      next(err)
+    })
+  }
+
+  
+  static updateStatus(req, res, next) {
+    let id = +req.params.id
+    let obj = {
+      status: req.body.status
+    }
+    todo.update({
+      status: "finished"
+    },
+      {
       where: {
         id: id
       }
@@ -69,24 +110,21 @@ class toDoController {
     })
   }
 
-  
-  static updateStatus(req, res) {
-    let id = +req.params.id
-    let obj = {
-      status: req.body.status
-    }
-    todo.update(obj, {
-      where: {
-        id: id
-      }
-    })
-    .then(data => {
-      res.status(200).json(data)
-    })
-    .catch(err => {
-      next(err)
-    })
-  }
+  // static getUpdateStatus(req, res, next) {
+  //   const userId = req.loggedInUser.id
+  //   todo.findAll({
+  //     where: {
+  //       status: "finished",
+  //       userId
+  //     }
+  //   })
+  //   .then(data => {
+  //     res.status(200).json(data)
+  //   })
+  //   .catch(err => {
+  //     next(err)
+  //   })
+  // }
 
   static deleteToDo(req, res, next) {
     let id = +req.params.id
@@ -160,6 +198,48 @@ class toDoController {
     .catch(err => {
       next(err)
     })
+  }
+
+	static googlelogin(req, res, next) {
+    let { google_access_token } = req.body
+    let email
+        const client = new OAuth2Client(process.env.CLIENT_ID);
+        client.verifyIdToken({
+            idToken: google_access_token,
+            audience: process.env.CLIENT_ID
+        })
+        .then(ticket => {
+            let payload = ticket.getPayload()
+            email = payload.email
+            return User.findOne({
+                where: {
+                    email: payload.email
+                }
+            })
+        })
+      .then(user => {
+        if (user) {
+          return user
+        } else {
+          let userObj = {
+            email,
+            password: 'randomaja'
+          }
+          return User.create(userObj)
+        }
+      })
+      then(dataUser => {
+        let access_token = signToken({
+          id: dataUser.id,
+          email: dataUser.email
+        })
+        return res.status(200).json({access_token})
+      })
+      .catch(err => {
+        console.log(err);
+      })
+
+    
   }
 
 

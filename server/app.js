@@ -4,7 +4,10 @@ const app = express()
 const port = process.env.PORT
 const router = require('./routes/index.js')
 const errorHandling = require('./middleware/errorHandling')
+const cors = require('cors')
 
+
+app.use(cors())
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 app.use(router)
