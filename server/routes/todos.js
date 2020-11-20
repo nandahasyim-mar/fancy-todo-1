@@ -9,7 +9,7 @@ router.use(authentication)
 
 
 // Router dari To Do
-router.post('/', authorization, toDoController.createToDo)
+router.post('/', toDoController.createToDo)
 router.get('/all', toDoController.allToDo)
 router.get('/:id', authorization, toDoController.spesificToDo)
 router.put('/:id', authorization, toDoController.updateAllTodo)

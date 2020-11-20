@@ -115,26 +115,36 @@ function login(e) {
 
 function register(e) {
   e.preventDefault()
-  const username = $("#register-email").val()
+  const email = $("#register-email").val()
   const password = $("#register-password").val()
 
   $.ajax({
     method: "POST",
     url: "http://localhost:3000/register",
     data: {
-      email: username,
+      email: email,
       password: password
     }
   })
   .done(respone => {
+    console.log(respone);
     if (!respone.email) {
-      Swal.fire("Must be email format")
+      Swal.fire(
+        `Failed`,
+        `Must be format email`,
+        `error`
+      )
     } else {
       beforeLogin()
     }
   })
   .fail(err => {
-    $(".alert").text('')
+    $("#landing").hide()
+    $("#nav-home").hide()
+    $("#nav-add").hide()
+    $("#nav-logout").hide()
+    $("#nav-login").show()
+    $("#register-form").show()
   })
 }
 
@@ -167,13 +177,65 @@ function allToDo() {
                 <p class="card-text font-weight-light">${el.description}</p><hr>
                 <small class="font-italic">Deadline:</small>
                 <p class="card-text">${date(el.due_date)}</p>
-                <button class="btn btn-warning" onclick="getTodoById(${el.id})" data-toggle="modal" data-target="#modal-edit">Edit</button>
+                <button class="btn btn-warning" onclick="getToDoById(${el.id})" data-toggle="modal" data-target="#modal-edit">Edit</button>
                 <button class="btn btn-success" onclick="patchToDo(${el.id}, event)">Done</button>
                 <button class="btn btn-danger" onclick="deleteToDo(${el.id})">Delete</button>
             </div>
             </div>
         `);
     });
+  })
+  .fail(err => {
+    console.log(err);
+  })
+}
+
+function getToDoById(id) {
+  $.ajax({
+    method: "GET",
+    url: `http://localhost:3000/todos/${+id}`,
+    headers: {
+      access_token: localStorage.getItem('access_token')
+    },
+    params: {
+      id: +id
+    }
+  })
+  .done(response => {
+    $('#edit-todo').append(`
+    <div class="modal fade" id="modal-edit" tabindex="-1" role="dialog" aria-labelledby="modal-edit" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-edit">Create your to do</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form onsubmit="putToDo(event, ${response.id})">
+            <div class="form-group">
+              <label for="title" class="col-form-label">Title:</label>
+              <input type="text" class="form-control" id="title-edit" value="${response.title}">
+            </div>
+            <div class="form-group">
+              <label for="description" class="col-form-label">Description:</label>
+              <input type="text" class="form-control" id="description-edit" value="${response.description}"></input>
+            </div>
+            <div class="form-group">
+              <label for="due-date" class="col-form-label">Deadline:</label>
+              <input type="date" id="due-date-edit" class="form-control" value="${date(response.due_date)}">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary">Edit</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+    `)
   })
   .fail(err => {
     console.log(err);
@@ -205,6 +267,38 @@ function createToDo(e) {
     window.location.reload()
     afterLogin()
     $('#modal').hide()
+  })
+  .fail(err => {
+    console.log(err);
+  })
+}
+
+function putToDo(e, id) {
+  e.preventDefault
+  let userId = localStorage.getItem('id')
+  let title = $('#title-edit').val()
+  let description = $('#description-edit').val()
+  let due_date = $('#due_date-edit').val()
+  $.ajax({
+    method: 'PUT',
+    url: `http://localhost:3000/todos/${+id}`,
+    headers: {
+      access_token: localStorage.getItem('access_token')
+    },
+    data: {
+      title,
+      description,
+      due_date,
+      userId
+    },
+    params: {
+      id: +id
+    }
+  })
+  .done(respone => {
+    window.location.reload()
+    afterLogin()
+    $('#modal-edit').hide()
   })
   .fail(err => {
     console.log(err);

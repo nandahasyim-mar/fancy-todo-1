@@ -48,6 +48,7 @@ class toDoController {
 
   static createToDo(req, res, next) {
     const userId = req.loggedInUser.id
+    console.log(userId);
     let obj = {
       title: req.body.title,
       description: req.body.description,
@@ -55,7 +56,7 @@ class toDoController {
       due_date: req.body.due_date,
       userId
     }
-    // console.log(obj);
+    console.log(obj);
     todo.create(obj)
     .then(data => {
       res.status(201).json(data)
